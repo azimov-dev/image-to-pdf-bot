@@ -1,7 +1,8 @@
-// stats.js
+// src/stats.js
 const fs = require("fs");
 const path = require("path");
 
+// stats.json will sit next to this file: src/stats.json
 const statsPath = path.join(__dirname, "stats.json");
 
 function loadStats() {
@@ -20,9 +21,14 @@ function saveStats(stats) {
   fs.writeFileSync(statsPath, JSON.stringify(stats, null, 2));
 }
 
-function recordMessage(userId) {
+/**
+ * userObj = ctx.from
+ */
+function recordMessage(userObj) {
+  if (!userObj || !userObj.id) return;
+
   const stats = loadStats();
-  const id = String(userId);
+  const id = String(userObj.id);
   const now = new Date().toISOString();
 
   stats.totalMessages += 1;
@@ -32,10 +38,17 @@ function recordMessage(userId) {
       firstSeen: now,
       lastSeen: now,
       messageCount: 1,
+      username: userObj.username || null,
+      firstName: userObj.first_name || null,
+      lastName: userObj.last_name || null,
     };
   } else {
-    stats.users[id].lastSeen = now;
-    stats.users[id].messageCount += 1;
+    const u = stats.users[id];
+    u.lastSeen = now;
+    u.messageCount = (u.messageCount || 0) + 1;
+    u.username = userObj.username || u.username || null;
+    u.firstName = userObj.first_name || u.firstName || null;
+    u.lastName = userObj.last_name || u.lastName || null;
   }
 
   saveStats(stats);
@@ -51,4 +64,4 @@ function getStats() {
   };
 }
 
-module.exports = { recordMessage, getStats };
+module.exports = { recordMessage, getStats, statsPath };

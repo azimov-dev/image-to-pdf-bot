@@ -1,13 +1,15 @@
 // src/index.js
 require("dotenv").config();
+const fs = require("fs");
 const { Telegraf, Markup } = require("telegraf");
-const { recordMessage, getStats } = require("./stats");
+const { recordMessage, getStats, statsPath } = require("./stats");
 const { imagesToPdf } = require("./converter");
 const { buildFileUrl, downloadTelegramFileToBuffer } = require("./telegram");
 const { resolveLang, getText, format, DEFAULT_LANG } = require("./i18n");
 const { mergePdfs } = require("./pdfTools");
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
+const ADMIN_ID = 756814955; // your Telegram ID
 
 if (!BOT_TOKEN) {
   console.error("BOT_TOKEN is not set in .env");
@@ -15,6 +17,18 @@ if (!BOT_TOKEN) {
 }
 
 const bot = new Telegraf(BOT_TOKEN);
+
+// ------- GLOBAL STATS MIDDLEWARE (counts all usage) -------
+bot.use(async (ctx, next) => {
+  try {
+    if (ctx.from) {
+      recordMessage(ctx.from);
+    }
+  } catch (e) {
+    console.error("Failed to record stats:", e);
+  }
+  return next();
+});
 
 // in-memory sessions: chatId -> session
 const sessions = new Map();
@@ -97,7 +111,6 @@ bot.start((ctx) => {
   const chatId = ctx.chat.id;
   const userLangCode = ctx.from?.language_code;
 
-  // check if session already exists
   let session = sessions.get(chatId);
 
   // first time: create session and show language buttons
@@ -599,15 +612,9 @@ bot.command("mergepdf", async (ctx) => {
   }
 });
 
-bot.command("stats", (ctx) => {
-  if (ctx.from.id !== ADMIN_ID) return;
-
-  const stats = getStats();
-  ctx.reply(
-    `Users: ${stats.uniqueUsers}\n` + `Total messages: ${stats.totalMessages}`,
-  );
-});
-
+/**
+ * /stats – short stats (admin only)
+ */
 bot.command("stats", (ctx) => {
   if (ctx.from.id !== ADMIN_ID) {
     return ctx.reply("⛔ You are not allowed to view stats.");
@@ -615,16 +622,16 @@ bot.command("stats", (ctx) => {
 
   const stats = getStats();
 
-  const message = `
-📊 Bot Stats
+  const message =
+    "📊 Bot Stats\n\n" +
+    `👤 Unique Users: ${stats.uniqueUsers}\n` +
+    `💬 Total Messages: ${stats.totalMessages}`;
 
-👤 Unique Users: ${stats.uniqueUsers}
-💬 Total Messages: ${stats.totalMessages}
-`;
-
-  ctx.reply(message);
+  return ctx.reply(message);
 });
 
+/** /fullstats – full stats (admin only)
+ */
 bot.command("fullstats", (ctx) => {
   if (ctx.from.id !== ADMIN_ID) {
     return ctx.reply("⛔ You cannot access this.");
@@ -632,13 +639,39 @@ bot.command("fullstats", (ctx) => {
 
   const stats = getStats();
 
-  let text = `📊 Full Stats\n\nUsers: ${stats.uniqueUsers}\nMessages: ${stats.totalMessages}\n\n`;
+  let text =
+    "📊 Full Stats\n\n" +
+    `Users: ${stats.uniqueUsers}\n` +
+    `Messages: ${stats.totalMessages}\n\n`;
 
   for (const [id, data] of Object.entries(stats.users)) {
-    text += `• ${id}: ${data.messageCount} messages\n`;
+    text += `• ${id}`;
+    if (data.username) text += ` (@${data.username})`;
+    text += `: ${data.messageCount || 0} messages\n`;
   }
 
-  ctx.reply(text);
+  return ctx.reply(text || "No stats yet.");
+});
+
+// send raw stats.json as a file
+bot.command("statsfile", async (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) {
+    return ctx.reply("⛔ You cannot access this.");
+  }
+
+  try {
+    if (!fs.existsSync(statsPath)) {
+      return ctx.reply("No stats.json file yet (no activity recorded).");
+    }
+
+    return ctx.replyWithDocument({
+      source: fs.createReadStream(statsPath),
+      filename: "stats.json",
+    });
+  } catch (err) {
+    console.error("Failed to send stats.json:", err);
+    return ctx.reply("Error while sending stats file.");
+  }
 });
 
 /**
@@ -747,6 +780,9 @@ bot.hears("/", (ctx) => {
     "/mergepdf - merge all stored PDFs",
     "/cancel - clear images and PDFs",
     "/lang <code> - change language",
+    "/stats - view stats (admin)",
+    "/fullstats - full stats (admin)",
+    "/statsfile - get stats.json (admin)",
   ].join("\n");
 
   ctx.reply(
@@ -757,18 +793,19 @@ bot.hears("/", (ctx) => {
   );
 });
 
-const ADMIN_ID = 756814955; // your own Telegram user id
-
 /**
- * Fallback for text messages
+ * Fallback for plain text messages (non-commands)
+ * - no double replies for /start, /stats, etc.
  */
 bot.on("message", (ctx) => {
-  recordMessage(ctx.from.id);
+  // ignore if it's photo or document – that is handled above
+  if (ctx.message.photo || ctx.message.document) return;
+
+  // ignore commands (text starting with "/") so we don't duplicate replies
+  if (ctx.message.text && ctx.message.text.startsWith("/")) return;
 
   const chatId = ctx.chat.id;
   const lang = getLangForChat(chatId);
-
-  if (ctx.message.photo || ctx.message.document) return;
 
   ctx.reply(
     getText(lang, "fallback") ||
@@ -776,9 +813,13 @@ bot.on("message", (ctx) => {
   );
 });
 
-bot.launch().then(() => {
-  console.log("Bot started");
-});
+bot
+  .launch({
+    dropPendingUpdates: true,
+  })
+  .then(() => {
+    console.log("Bot started");
+  });
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
