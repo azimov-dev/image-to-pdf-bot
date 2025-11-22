@@ -31,6 +31,8 @@ Works in multiple languages.
 Bot chooses the best language based on user's Telegram language, or user can switch manually with /lang.
 
 🧩 Commands
+
+```
 /start - Start the bot and choose language
 /list - Show current image order
 /swap - Swap two positions
@@ -48,6 +50,7 @@ Bot chooses the best language based on user's Telegram language, or user can swi
 
 /cancel - Clear current session
 /lang - Change language
+```
 
 📄 License
 MIT License.
