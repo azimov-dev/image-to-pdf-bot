@@ -1,6 +1,7 @@
 // src/index.js
 require("dotenv").config();
 const { Telegraf, Markup } = require("telegraf");
+const { recordMessage, getStats } = require("./stats");
 const { imagesToPdf } = require("./converter");
 const { buildFileUrl, downloadTelegramFileToBuffer } = require("./telegram");
 const { resolveLang, getText, format, DEFAULT_LANG } = require("./i18n");
@@ -598,6 +599,48 @@ bot.command("mergepdf", async (ctx) => {
   }
 });
 
+bot.command("stats", (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) return;
+
+  const stats = getStats();
+  ctx.reply(
+    `Users: ${stats.uniqueUsers}\n` + `Total messages: ${stats.totalMessages}`,
+  );
+});
+
+bot.command("stats", (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) {
+    return ctx.reply("⛔ You are not allowed to view stats.");
+  }
+
+  const stats = getStats();
+
+  const message = `
+📊 Bot Stats
+
+👤 Unique Users: ${stats.uniqueUsers}
+💬 Total Messages: ${stats.totalMessages}
+`;
+
+  ctx.reply(message);
+});
+
+bot.command("fullstats", (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) {
+    return ctx.reply("⛔ You cannot access this.");
+  }
+
+  const stats = getStats();
+
+  let text = `📊 Full Stats\n\nUsers: ${stats.uniqueUsers}\nMessages: ${stats.totalMessages}\n\n`;
+
+  for (const [id, data] of Object.entries(stats.users)) {
+    text += `• ${id}: ${data.messageCount} messages\n`;
+  }
+
+  ctx.reply(text);
+});
+
 /**
  * Handle photos and documents (images + PDFs)
  */
@@ -714,10 +757,14 @@ bot.hears("/", (ctx) => {
   );
 });
 
+const ADMIN_ID = 756814955; // your own Telegram user id
+
 /**
  * Fallback for text messages
  */
 bot.on("message", (ctx) => {
+  recordMessage(ctx.from.id);
+
   const chatId = ctx.chat.id;
   const lang = getLangForChat(chatId);
 
