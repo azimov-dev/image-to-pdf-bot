@@ -5,30 +5,22 @@ const DEFAULT_LANG = "en";
 
 const messages = {
   en: {
-    // shown after language selection or /start
-    start: `👋 Hi! I turn your images and PDFs into a clean, ordered PDF.
+    // shown after language selection or /help
+    start: `👋 Hi! I can turn images into a PDF or merge PDFs.
 
-📸 Images → PDF:
-1) Send me one or more images (photos or image files).
-2) Use /list to see the current order.
-3) Use /swap a b or /move a b to change positions.
-4) Use /remove n to delete a page, and /rotate n [deg] to fix rotation.
-5) When you’re ready, send /done and I’ll send you the PDF.
-
-⚙️ Extra options:
-- /name MyFile — set PDF file name.
-- /quality high|standard|light — change quality/size.
-- /pagesize auto|a4p|a4l|square — change page size.
-- /bg white|black|transparent — change background.
-
-📚 PDF merge:
-- Send PDF files as documents.
-- Use /listpdf to see all stored PDFs.
-- Use /mergepdf to get one merged PDF.
-
-🔁 Other:
-- /cancel — clear current images and PDFs.
-- /lang en|uz|ru — change language.`,
+  Use the menu buttons below to pick what you want.`,
+    menuMain: "Choose what you want to do:",
+    modeImages: "🖼️ Image mode enabled. Send images now.",
+    modeMerge: "📚 Merge mode enabled. Send PDF files now.",
+    autoModeImages: "🖼️ Switched to Image mode.",
+    autoModeMerge: "📚 Switched to Merge mode.",
+    settingsTitle: "⚙️ Settings",
+    chooseQuality: "Choose output quality:",
+    choosePageSize: "Choose page size:",
+    chooseBackground: "Choose background color:",
+    askName: "Send the PDF file name (example: MyDocument)",
+    doneReady: "✅ PDF is ready. What next?",
+    mergeCleared: "PDF list cleared.",
 
     cleared: "Session cleared. You can start again.",
     noImages: "You have no images stored.",
@@ -40,6 +32,7 @@ const messages = {
     swapSuccess:
       "Swapped positions {a} and {b}. Use /list to check the new order.",
     langUsage: "Usage: /lang en|uz|ru",
+    langUsageButtons: "Choose your language:",
     langInvalid: "Unsupported language code. Use: en, uz, ru.",
     langSet: "Language changed.",
     converting: "Converting images to PDF...",
@@ -49,9 +42,9 @@ const messages = {
     readError: "Could not read file.",
     receiveError: "Error while receiving the file. Try again.",
     gotImage:
-      "Got image #{id} at position {pos}. Send more images or use /list, /swap, /move, /remove, /rotate, /done.",
-    fallback:
-      "Send me images or PDFs. I can build an ordered PDF from them. Use /done for images or /mergepdf for PDFs.",
+      "Got image #{id} at position {pos}. Send more images or tap the buttons below.",
+    gotImagesGroup: "Added {count} images in order. Positions {from}-{to}.",
+    fallback: "Send images or PDFs, or choose a mode from the menu.",
     gotPdf:
       "Got PDF #{id}. Use /listpdf to see all PDFs or /mergepdf to merge them.",
     noPdfs: "You have no PDFs stored. Send PDF files as documents.",
@@ -60,34 +53,90 @@ const messages = {
     mergeError: "Error while merging PDFs. Try again.",
     mergingPdfs: "Merging PDFs, please wait...",
     mergedResultCaption: "Your merged PDF is ready!",
+    removeNoImages: "No images to remove.",
+    imageNotFound: "Image not found.",
+    removeUsage: "Usage: /remove n  (example: /remove 2)",
+    removeInvalid: "Invalid index. You have {count} images.",
+    removeSuccess: "Removed image #{id} at position {pos}.",
+    moveNoImages: "No images to move.",
+    moveUsage: "Usage: /move from to  (example: /move 5 1)",
+    moveInvalid: "Invalid positions. You have {count} images.",
+    moveSame: "Positions are the same, nothing to move.",
+    moveSuccess: "Moved image #{id} from {from} to {to}.",
+    nameUsage: "Usage: /name My_File_Name",
+    nameSet: "OK, I will name your file: {name}",
+    qualityUsage: "Usage: /quality high|standard|light",
+    qualityInvalid: "Invalid quality. Use: high, standard, or light.",
+    qualitySet: "Quality set to: {quality}",
+    pageSizeUsage: "Usage: /pagesize auto|a4p|a4l|square",
+    pageSizeInvalid: "Invalid page size. Use: auto, a4p, a4l, or square.",
+    pageSizeSet: "Page size set to: {pageSize}",
+    rotateNoImages: "No images to rotate.",
+    rotateUsage: "Usage: /rotate n [deg]. Example: /rotate 2 90",
+    rotateInvalidIndex: "Invalid index. You have {count} images.",
+    rotateInvalidDeg: "Invalid degrees. Use an integer like 90, 180, 270.",
+    rotateSuccess:
+      "Rotated image #{id} at position {pos}. Now rotation = {deg}°",
+    bgUsage: "Usage: /bg white|black|transparent",
+    bgInvalid: "Invalid background. Use: white, black, or transparent.",
+    bgSet: "Background set to: {background}",
+    rateLimit: "Too many requests. Please wait a bit.",
+    fileTooLarge: "File is too large ({size} MB). Max size: {max} MB.",
+    status:
+      "Images: {images}\nPDFs: {pdfs}\nName: {name}\nQuality: {quality}\nPage size: {pageSize}\nBackground: {background}",
+    btnRotate90: "🔄 90°",
+    btnRotate180: "🔄 180°",
+    btnRotate270: "🔄 270°",
+    btnRotateImage: "🔄 Rotate image",
+    btnDeleteImage: "🗑️ Delete image",
+    btnRemove: "🗑️ Remove",
+    chooseImageRotate: "Select image to rotate:",
+    chooseImageDelete: "Select image to delete:",
+    chooseRotateDegree: "Choose rotation angle:",
+    btnList: "📋 List",
+    btnDone: "✅ Done",
+    menuImages: "🖼️ Images → PDF",
+    menuMerge: "📚 Merge PDFs",
+    menuSettings: "⚙️ Settings",
+    menuLang: "🌐 Language",
+    menuHelp: "❓ Help",
+    menuStatus: "📊 Status",
+    menuBack: "⬅️ Back",
+    mergeNow: "🧩 Merge now",
+    mergeList: "📄 List PDFs",
+    mergeClear: "🧹 Clear PDFs",
+    settingsQuality: "✨ Quality",
+    settingsPageSize: "📄 Page size",
+    settingsBackground: "🎨 Background",
+    settingsName: "📝 File name",
+    qualityHigh: "✨ High",
+    qualityStandard: "⚖️ Standard",
+    qualityLight: "🪶 Light",
+    pageAuto: "📄 Auto",
+    pageA4P: "📄 A4 Portrait",
+    pageA4L: "📄 A4 Landscape",
+    pageSquare: "⬜ Square",
+    bgWhite: "⬜ White",
+    bgBlack: "⬛ Black",
+    bgTransparent: "🫥 Transparent",
   },
 
   uz: {
-    start: `👋 Salom! Men rasmlar va PDF fayllaringizdan tartibli PDF yasab beraman.
+    start: `👋 Salom! Men rasmlardan PDF yasayman yoki PDFlarni birlashtiraman.
 
-📸 Rasmlardan PDF:
-1) Bir yoki bir nechta rasm yuboring (foto yoki rasm fayli).
-2) /list bilan hozirgi tartibni ko‘ring.
-3) /swap a b yoki /move a b bilan tartibni o‘zgartiring.
-4) /remove n bilan sahifani o‘chiring, /rotate n [gradus] bilan aylantiring.
-5) Tayyor bo‘lgach, /done yuboring — men sizga PDF yuboraman.
-
-⚙️ Qo‘shimcha sozlamalar:
-- /name MeningFaylim — PDF nomini o‘rnatish.
-- /quality high|standard|light — sifat/hajmni tanlash.
-- /pagesize auto|a4p|a4l|square — sahifa o‘lchamini tanlash.
-- /bg white|black|transparent — fon rangini o‘zgartirish.
-
-📚 PDF birlashtirish:
-- PDF fayllarni document qilib yuboring.
-- /listpdf bilan saqlangan PDF larni ko‘ring.
-- /mergepdf bilan ularni bitta PDF ga birlashtiring.
-
-🔁 Boshqa:
-- /cancel — joriy rasmlar va PDF larni tozalaydi.
-- /lang en|uz|ru — tilni almashtiradi.`,
-
-    cleared: "Session tozalandi. Yangi boshlasangiz bo‘ladi.",
+  Pastdagi menyudan kerakli rejimni tanlang.`,
+    menuMain: "Nimani qilishni xohlaysiz?",
+    modeImages: "🖼️ Rasm rejimi yoqildi. Endi rasmlar yuboring.",
+    modeMerge: "📚 Birlashtirish rejimi yoqildi. Endi PDF yuboring.",
+    autoModeImages: "🖼️ Rasm rejimiga o‘tdim.",
+    autoModeMerge: "📚 Birlashtirish rejimiga o‘tdim.",
+    settingsTitle: "⚙️ Sozlamalar",
+    chooseQuality: "Sifatni tanlang:",
+    choosePageSize: "Sahifa o‘lchamini tanlang:",
+    chooseBackground: "Fon rangini tanlang:",
+    askName: "PDF fayl nomini yuboring (masalan: MyDocument)",
+    doneReady: "✅ PDF tayyor. Keyin nima?",
+    mergeCleared: "PDF ro‘yxati tozalandi.",
     noImages: "Sizda saqlangan rasm yo‘q.",
     listHeader: "Hozirgi rasm tartibi:",
     listFooter:
@@ -98,6 +147,7 @@ const messages = {
     swapSuccess:
       "{a} va {b}-pozitsiyalar almashtirildi. Yangi tartibni /list orqali ko‘ring.",
     langUsage: "Foydalanish: /lang en|uz|ru",
+    langUsageButtons: "Tilni tanlang:",
     langInvalid:
       "Bunday til kodi qo‘llab-quvvatlanmaydi. en, uz yoki ru dan foydalaning.",
     langSet: "Til muvaffaqiyatli o‘zgartirildi.",
@@ -109,9 +159,10 @@ const messages = {
     readError: "Faylni o‘qib bo‘lmadi.",
     receiveError: "Faylni qabul qilishda xatolik. Qayta urinib ko‘ring.",
     gotImage:
-      "Rasm #{id} qabul qilindi. Pozitsiya: {pos}. Yana rasm yuboring yoki /list, /swap, /move, /remove, /rotate, /done dan foydalaning.",
-    fallback:
-      "Menga rasm yoki PDF yuboring. Men ularni tartibli PDF ga aylantirib beraman. Rasmlar uchun /done, PDF larni birlashtirish uchun /mergepdf ishlating.",
+      "Rasm #{id} qabul qilindi. Pozitsiya: {pos}. Yana rasm yuboring yoki pastdagi tugmalarni bosing.",
+    gotImagesGroup:
+      "{count} ta rasm tartib bilan qo‘shildi. Pozitsiyalar: {from}-{to}.",
+    fallback: "Rasm yoki PDF yuboring yoki menyudan rejim tanlang.",
     gotPdf:
       "PDF #{id} qabul qilindi. Barcha PDF larni /listpdf bilan ko‘ring yoki /mergepdf bilan birlashtiring.",
     noPdfs: "Saqlangan PDF fayl yo‘q. Avval PDF yuboring (document sifatida).",
@@ -120,32 +171,90 @@ const messages = {
     mergeError: "PDF fayllarni birlashtirishda xatolik. Qayta urinib ko‘ring.",
     mergingPdfs: "PDF fayllar birlashtirilmoqda, biroz kuting...",
     mergedResultCaption: "Birlashtirilgan PDF tayyor!",
+    removeNoImages: "O‘chirish uchun rasm yo‘q.",
+    imageNotFound: "Rasm topilmadi.",
+    removeUsage: "Foydalanish: /remove n  (misol: /remove 2)",
+    removeInvalid: "Noto‘g‘ri indeks. Sizda {count} ta rasm bor.",
+    removeSuccess: "Rasm #{id} {pos}-pozitsiyadan o‘chirildi.",
+    moveNoImages: "Ko‘chirish uchun rasm yo‘q.",
+    moveUsage: "Foydalanish: /move from to  (misol: /move 5 1)",
+    moveInvalid: "Noto‘g‘ri pozitsiya. Sizda {count} ta rasm bor.",
+    moveSame: "Pozitsiyalar bir xil, ko‘chirishga hojat yo‘q.",
+    moveSuccess: "Rasm #{id} {from}-pozitsiyadan {to}-pozitsiyaga ko‘chirildi.",
+    nameUsage: "Foydalanish: /name MeningFaylim",
+    nameSet: "Fayl nomi: {name}",
+    qualityUsage: "Foydalanish: /quality high|standard|light",
+    qualityInvalid: "Sifat noto‘g‘ri. high, standard yoki light.",
+    qualitySet: "Sifat: {quality}",
+    pageSizeUsage: "Foydalanish: /pagesize auto|a4p|a4l|square",
+    pageSizeInvalid: "Sahifa o‘lchami noto‘g‘ri. auto, a4p, a4l, yoki square.",
+    pageSizeSet: "Sahifa o‘lchami: {pageSize}",
+    rotateNoImages: "Aylantirish uchun rasm yo‘q.",
+    rotateUsage: "Foydalanish: /rotate n [gradus]. Misol: /rotate 2 90",
+    rotateInvalidIndex: "Noto‘g‘ri indeks. Sizda {count} ta rasm bor.",
+    rotateInvalidDeg: "Noto‘g‘ri gradus. 90, 180, 270 kabi butun son kiriting.",
+    rotateSuccess:
+      "Rasm #{id} {pos}-pozitsiyada aylantirildi. Hozirgi aylanish: {deg}°",
+    bgUsage: "Foydalanish: /bg white|black|transparent",
+    bgInvalid: "Fon noto‘g‘ri. white, black yoki transparent.",
+    bgSet: "Fon: {background}",
+    rateLimit: "So‘rovlar juda ko‘p. Biroz kuting.",
+    fileTooLarge: "Fayl juda katta ({size} MB). Maksimal: {max} MB.",
+    status:
+      "Rasmlar: {images}\nPDFlar: {pdfs}\nNomi: {name}\nSifat: {quality}\nSahifa o‘lchami: {pageSize}\nFon: {background}",
+    btnRotate90: "🔄 90°",
+    btnRotate180: "🔄 180°",
+    btnRotate270: "🔄 270°",
+    btnRotateImage: "🔄 Rasmni aylantirish",
+    btnDeleteImage: "🗑️ Rasmni o‘chirish",
+    btnRemove: "🗑️ O‘chirish",
+    chooseImageRotate: "Qaysi rasmni aylantirish?",
+    chooseImageDelete: "Qaysi rasmni o‘chirish?",
+    chooseRotateDegree: "Aylantirish burchagini tanlang:",
+    btnList: "📋 Ro‘yxat",
+    btnDone: "✅ Done",
+    menuImages: "🖼️ Rasmlar → PDF",
+    menuMerge: "📚 PDF birlashtirish",
+    menuSettings: "⚙️ Sozlamalar",
+    menuLang: "🌐 Til",
+    menuHelp: "❓ Yordam",
+    menuStatus: "📊 Holat",
+    menuBack: "⬅️ Ortga",
+    mergeNow: "🧩 Birlashtirish",
+    mergeList: "📄 PDF ro‘yxati",
+    mergeClear: "🧹 PDF tozalash",
+    settingsQuality: "✨ Sifat",
+    settingsPageSize: "📄 Sahifa o‘lchami",
+    settingsBackground: "🎨 Fon",
+    settingsName: "📝 Fayl nomi",
+    qualityHigh: "✨ High",
+    qualityStandard: "⚖️ Standard",
+    qualityLight: "🪶 Light",
+    pageAuto: "📄 Auto",
+    pageA4P: "📄 A4 Portret",
+    pageA4L: "📄 A4 Landscape",
+    pageSquare: "⬜ Square",
+    bgWhite: "⬜ White",
+    bgBlack: "⬛ Black",
+    bgTransparent: "🫥 Transparent",
   },
 
   ru: {
-    start: `👋 Привет! Я собираю твои изображения и PDF в аккуратный, упорядоченный PDF.
+    start: `👋 Привет! Я делаю PDF из картинок или объединяю PDF.
 
-📸 Картинки → PDF:
-1) Отправь одно или несколько изображений (фото или файлы).
-2) Используй /list, чтобы увидеть текущий порядок.
-3) Меняй порядок через /swap a b или /move a b.
-4) Удаляй страницу командой /remove n, вращай /rotate n [градусы].
-5) Когда всё готово — отправь /done, и я пришлю PDF.
-
-⚙️ Дополнительно:
-- /name MyFile — задать имя итогового PDF.
-- /quality high|standard|light — выбрать качество/размер.
-- /pagesize auto|a4p|a4l|square — выбрать размер страницы.
-- /bg white|black|transparent — выбрать фон.
-
-📚 Объединение PDF:
-- Отправь несколько PDF как документ.
-- Посмотри список через /listpdf.
-- Объедини их командой /mergepdf.
-
-🔁 Прочее:
-- /cancel очищает текущие картинки и PDF.
-- /lang en|uz|ru меняет язык.`,
+  Выберите режим в меню ниже.`,
+    menuMain: "Что хотите сделать?",
+    modeImages: "🖼️ Режим изображений включен. Отправляйте картинки.",
+    modeMerge: "📚 Режим объединения включен. Отправляйте PDF.",
+    autoModeImages: "🖼️ Переключился в режим изображений.",
+    autoModeMerge: "📚 Переключился в режим объединения.",
+    settingsTitle: "⚙️ Настройки",
+    chooseQuality: "Выберите качество:",
+    choosePageSize: "Выберите размер страницы:",
+    chooseBackground: "Выберите фон:",
+    askName: "Отправьте имя файла PDF (например: MyDocument)",
+    doneReady: "✅ PDF готов. Что дальше?",
+    mergeCleared: "Список PDF очищен.",
 
     cleared: "Сессия очищена. Можно начать заново.",
     noImages: "У тебя нет сохранённых изображений.",
@@ -157,6 +266,7 @@ const messages = {
     swapSuccess:
       "Поменял местами позиции {a} и {b}. Посмотри новый порядок через /list.",
     langUsage: "Использование: /lang en|uz|ru",
+    langUsageButtons: "Выберите язык:",
     langInvalid: "Такой язык не поддерживается. Используй: en, uz или ru.",
     langSet: "Язык успешно изменён.",
     converting: "Преобразую изображения в PDF...",
@@ -166,9 +276,10 @@ const messages = {
     readError: "Не удалось прочитать файл.",
     receiveError: "Ошибка при получении файла. Попробуй ещё раз.",
     gotImage:
-      "Изображение #{id} получено. Позиция: {pos}. Отправляй ещё или пользуйся /list, /swap, /move, /remove, /rotate, /done.",
-    fallback:
-      "Отправь мне изображения или PDF. Я соберу из них аккуратный PDF. Для картинок используй /done, для объединения PDF — /mergepdf.",
+      "Изображение #{id} получено. Позиция: {pos}. Отправляй ещё или используй кнопки ниже.",
+    gotImagesGroup:
+      "Добавил {count} изображений по порядку. Позиции: {from}-{to}.",
+    fallback: "Отправьте изображения или PDF, либо выберите режим в меню.",
     gotPdf:
       "PDF #{id} получен. Посмотри все через /listpdf или объедини через /mergepdf.",
     noPdfs: "У тебя нет сохранённых PDF. Сначала отправь PDF как документ.",
@@ -177,6 +288,73 @@ const messages = {
     mergeError: "Ошибка при объединении PDF. Попробуй ещё раз.",
     mergingPdfs: "Идёт объединение PDF файлов, подождите...",
     mergedResultCaption: "Объединённый PDF готов!",
+    removeNoImages: "Нет изображений для удаления.",
+    imageNotFound: "Изображение не найдено.",
+    removeUsage: "Использование: /remove n  (пример: /remove 2)",
+    removeInvalid: "Неверный индекс. У тебя {count} изображений.",
+    removeSuccess: "Удалил изображение #{id} на позиции {pos}.",
+    moveNoImages: "Нет изображений для перемещения.",
+    moveUsage: "Использование: /move from to  (пример: /move 5 1)",
+    moveInvalid: "Неверные позиции. У тебя {count} изображений.",
+    moveSame: "Позиции совпадают, нечего перемещать.",
+    moveSuccess: "Переместил изображение #{id} с {from} на {to}.",
+    nameUsage: "Использование: /name MyFile",
+    nameSet: "Имя файла: {name}",
+    qualityUsage: "Использование: /quality high|standard|light",
+    qualityInvalid: "Неверное качество. Используй: high, standard или light.",
+    qualitySet: "Качество: {quality}",
+    pageSizeUsage: "Использование: /pagesize auto|a4p|a4l|square",
+    pageSizeInvalid:
+      "Неверный размер страницы. Используй: auto, a4p, a4l или square.",
+    pageSizeSet: "Размер страницы: {pageSize}",
+    rotateNoImages: "Нет изображений для поворота.",
+    rotateUsage: "Использование: /rotate n [градусы]. Пример: /rotate 2 90",
+    rotateInvalidIndex: "Неверный индекс. У тебя {count} изображений.",
+    rotateInvalidDeg: "Неверные градусы. Введи целое число: 90, 180, 270.",
+    rotateSuccess:
+      "Повернул изображение #{id} на позиции {pos}. Текущий поворот: {deg}°",
+    bgUsage: "Использование: /bg white|black|transparent",
+    bgInvalid: "Неверный фон. Используй: white, black или transparent.",
+    bgSet: "Фон: {background}",
+    rateLimit: "Слишком много запросов. Подожди немного.",
+    fileTooLarge: "Файл слишком большой ({size} МБ). Максимум: {max} МБ.",
+    status:
+      "Изображения: {images}\nPDF: {pdfs}\nИмя: {name}\nКачество: {quality}\nРазмер страницы: {pageSize}\nФон: {background}",
+    btnRotate90: "🔄 90°",
+    btnRotate180: "🔄 180°",
+    btnRotate270: "🔄 270°",
+    btnRotateImage: "🔄 Повернуть изображение",
+    btnDeleteImage: "🗑️ Удалить изображение",
+    btnRemove: "🗑️ Удалить",
+    chooseImageRotate: "Выберите изображение для поворота:",
+    chooseImageDelete: "Выберите изображение для удаления:",
+    chooseRotateDegree: "Выберите угол поворота:",
+    btnList: "📋 Список",
+    btnDone: "✅ Done",
+    menuImages: "🖼️ Картинки → PDF",
+    menuMerge: "📚 Объединить PDF",
+    menuSettings: "⚙️ Настройки",
+    menuLang: "🌐 Язык",
+    menuHelp: "❓ Помощь",
+    menuStatus: "📊 Статус",
+    menuBack: "⬅️ Назад",
+    mergeNow: "🧩 Объединить",
+    mergeList: "📄 Список PDF",
+    mergeClear: "🧹 Очистить PDF",
+    settingsQuality: "✨ Качество",
+    settingsPageSize: "📄 Размер страницы",
+    settingsBackground: "🎨 Фон",
+    settingsName: "📝 Имя файла",
+    qualityHigh: "✨ High",
+    qualityStandard: "⚖️ Standard",
+    qualityLight: "🪶 Light",
+    pageAuto: "📄 Auto",
+    pageA4P: "📄 A4 Portrait",
+    pageA4L: "📄 A4 Landscape",
+    pageSquare: "⬜ Square",
+    bgWhite: "⬜ White",
+    bgBlack: "⬛ Black",
+    bgTransparent: "🫥 Transparent",
   },
 };
 

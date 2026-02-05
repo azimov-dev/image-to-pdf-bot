@@ -34,6 +34,8 @@ Bot chooses the best language based on user's Telegram language, or user can swi
 
 ```
 /start - Start the bot and choose language
+/help - Show instructions
+/status - Show current settings
 /list - Show current image order
 /swap - Swap two positions
 /move - Move an image to another position
@@ -51,6 +53,11 @@ Bot chooses the best language based on user's Telegram language, or user can swi
 /cancel - Clear current session
 /lang - Change language
 ```
+
+🧪 Environment
+
+- `BOT_TOKEN` — Telegram bot token
+- `MAX_FILE_SIZE_MB` — optional max upload size (default: 20)
 
 📄 License
 MIT License.

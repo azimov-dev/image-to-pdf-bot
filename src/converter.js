@@ -1,5 +1,5 @@
 // src/converter.js
-const { PDFDocument, rgb } = require("pdf-lib");
+const { PDFDocument, rgb, degrees } = require("pdf-lib");
 
 // page sizes in points
 const PAGE_SIZES = {
@@ -82,15 +82,36 @@ async function imagesToPdf(images, options = {}) {
       });
     }
 
-    const x = (pageWidth - width) / 2;
-    const y = (pageHeight - height) / 2;
+    const normalizedRotation = ((rotationDeg % 360) + 360) % 360;
+    const safeRotation = [0, 90, 180, 270].includes(normalizedRotation)
+      ? normalizedRotation
+      : 0;
+
+    let drawWidth = width;
+    let drawHeight = height;
+    if (safeRotation === 90 || safeRotation === 270) {
+      drawWidth = height;
+      drawHeight = width;
+    }
+
+    let x = (pageWidth - drawWidth) / 2;
+    let y = (pageHeight - drawHeight) / 2;
+
+    if (safeRotation === 90) {
+      x += drawWidth;
+    } else if (safeRotation === 180) {
+      x += drawWidth;
+      y += drawHeight;
+    } else if (safeRotation === 270) {
+      y += drawHeight;
+    }
 
     page.drawImage(img, {
       x,
       y,
       width,
       height,
-      rotate: rotationDeg ? { degrees: rotationDeg } : undefined,
+      rotate: safeRotation ? degrees(safeRotation) : undefined,
     });
   }
 
